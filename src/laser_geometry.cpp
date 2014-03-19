@@ -220,7 +220,9 @@ const boost::numeric::ublas::matrix<double>& LaserProjection::getUnitVectors_(do
     tf::StampedTransform end_transform ;
     tf::StampedTransform cur_transform ;
 
+    tf.waitForTransform(target_frame, scan_in.header.frame_id, start_time, ros::Duration(0.1));
     tf.lookupTransform(target_frame, scan_in.header.frame_id, start_time, start_transform) ;
+    tf.waitForTransform(target_frame, scan_in.header.frame_id, end_time, ros::Duration(0.1));
     tf.lookupTransform(target_frame, scan_in.header.frame_id, end_time, end_transform) ;
 
     //we need to find the index of the index channel
@@ -554,8 +556,10 @@ const boost::numeric::ublas::matrix<double>& LaserProjection::getUnitVectors_(do
 
     tf::StampedTransform start_transform, end_transform, cur_transform ;
 
-    tf.lookupTransform (target_frame, scan_in.header.frame_id, start_time, start_transform);
-    tf.lookupTransform (target_frame, scan_in.header.frame_id, end_time, end_transform);
+    tf.waitForTransform(target_frame, scan_in.header.frame_id, start_time, ros::Duration(0.1));
+    tf.lookupTransform(target_frame, scan_in.header.frame_id, start_time, start_transform) ;
+    tf.waitForTransform(target_frame, scan_in.header.frame_id, end_time, ros::Duration(0.1));
+    tf.lookupTransform(target_frame, scan_in.header.frame_id, end_time, end_transform) ;
 
     double ranges_norm = 1 / ((double) scan_in.ranges.size () - 1.0);
 
