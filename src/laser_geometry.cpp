@@ -220,11 +220,16 @@ const boost::numeric::ublas::matrix<double>& LaserProjection::getUnitVectors_(do
     tf::StampedTransform end_transform ;
     tf::StampedTransform cur_transform ;
 
-    tf.waitForTransform(target_frame, scan_in.header.frame_id, start_time, ros::Duration(0.1));
-    tf.lookupTransform(target_frame, scan_in.header.frame_id, start_time, start_transform) ;
-    tf.waitForTransform(target_frame, scan_in.header.frame_id, end_time, ros::Duration(0.1));
-    tf.lookupTransform(target_frame, scan_in.header.frame_id, end_time, end_transform) ;
+    if(tf.waitForTransform(target_frame, scan_in.header.frame_id, start_time, ros::Duration(1.0)))
+      tf.lookupTransform(target_frame, scan_in.header.frame_id, start_time, start_transform) ;
+    else
+      return;
 
+    if(tf.waitForTransform(target_frame, scan_in.header.frame_id, end_time, ros::Duration(1.0)))
+       tf.lookupTransform(target_frame, scan_in.header.frame_id, end_time, end_transform) ;
+    else
+       return;
+    
     //we need to find the index of the index channel
     int index_channel_idx = -1;
     for(unsigned int i = 0; i < cloud_out.channels.size(); ++i)
