@@ -104,22 +104,15 @@ namespace laser_geometry
       range_cutoff = scan_in.range_max;
     else
       range_cutoff = std::min(range_cutoff, (double)scan_in.range_max); 
-    
+
     unsigned int count = 0;
     for (unsigned int index = 0; index< scan_in.ranges.size(); index++)
     {
       if (preservative || ((ranges(0,index) < range_cutoff) && (ranges(0,index) >= scan_in.range_min))) //if valid or preservative
       {
-	  
         cloud_out.points[count].x = output(0,index);
         cloud_out.points[count].y = output(1,index);
         cloud_out.points[count].z = 0.0;
-	  
-        //double x = cloud_out.points[count].x;
-        //double y = cloud_out.points[count].y;
-        //if(x*x + y*y < scan_in.range_min * scan_in.range_min){
-        //  ROS_INFO("(%.2f, %.2f)", cloud_out.points[count].x, cloud_out.points[count].y);
-        //}
 
         // Save the original point index
         if (idx_index != -1)
@@ -143,7 +136,6 @@ namespace laser_geometry
         count++;
       }
     }
-   
 
     //downsize if necessary
     cloud_out.points.resize (count);
@@ -175,7 +167,6 @@ const boost::numeric::ublas::matrix<double>& LaserProjection::getUnitVectors_(do
     //and return
     return *tempPtr;
   };
-
 
   LaserProjection::~LaserProjection()
   {
@@ -220,16 +211,28 @@ const boost::numeric::ublas::matrix<double>& LaserProjection::getUnitVectors_(do
     tf::StampedTransform end_transform ;
     tf::StampedTransform cur_transform ;
 
+    //unsafe version, but compliant with catching tf error
+    //tf.lookupTransform(target_frame, scan_in.header.frame_id, start_time, start_transform) ;
+    //tf.lookupTransform(target_frame, scan_in.header.frame_id, end_time, end_transform) ;
+
     if(tf.waitForTransform(target_frame, scan_in.header.frame_id, start_time, ros::Duration(1.0)))
-      tf.lookupTransform(target_frame, scan_in.header.frame_id, start_time, start_transform) ;
+    {
+        tf.lookupTransform(target_frame, scan_in.header.frame_id, start_time, start_transform) ;
+    }
     else
-      return;
+    {
+        ROS_WARN("LaserProjection::transformLaserScanToPointCloud: could not lookup TF at start_time");
+    }
 
     if(tf.waitForTransform(target_frame, scan_in.header.frame_id, end_time, ros::Duration(1.0)))
-       tf.lookupTransform(target_frame, scan_in.header.frame_id, end_time, end_transform) ;
+    {
+        tf.lookupTransform(target_frame, scan_in.header.frame_id, end_time, end_transform) ;
+    }
     else
-       return;
-    
+    {
+        ROS_WARN("LaserProjection::transformLaserScanToPointCloud: could not lookup TF at end_time");
+    }
+
     //we need to find the index of the index channel
     int index_channel_idx = -1;
     for(unsigned int i = 0; i < cloud_out.channels.size(); ++i)
